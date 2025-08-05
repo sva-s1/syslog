@@ -1,0 +1,40 @@
+# Ignore everything by default
+*
+
+# Allow files and directories needed for the build
+!Dockerfile
+!entrypoint.sh
+!syslog-ng.conf
+!syslog-ng.conf.tmpl
+!samples/
+
+# Ignore sensitive files
+.env
+*.pem
+*.key
+*.crt
+
+# Version control
+!.gitignore
+!.git/
+
+# Documentation
+!README.md
+!PLAN.md
+
+# Ignore editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore build artifacts
+*.log
+*.tmp
+*.pid
+
+# Ignore local development files
+data/
+logs/
+

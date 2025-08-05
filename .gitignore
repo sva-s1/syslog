@@ -1,23 +1,11 @@
-# Environment and secrets
+# keep template and entrypoint in context – exclude only obvious junk
 .env
-
-# Build artifacts
 *.log
-*.pid
 syslog-ng.persist
-
-# Test files
 test_logs/
-*.test
-
-# Docker
-.dockerignore
-
-# OS files
+samples/
 .DS_Store
 Thumbs.db
-
-# IDE files
 .vscode/
 .idea/
 *.swp

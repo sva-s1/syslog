@@ -1,0 +1,455 @@
+# UPDATED Project Content
+
+pwd
+/Users/steve.vanallen/Github/syslog
+
+tree (restricted)
+.
+├── samples
+├── .env.example
+├── .gitignore
+├── CHANGELOG.md
+├── docker-compose.yml
+├── Dockerfile
+├── entrypoint.sh
+├── PLAN.md
+├── README.md
+├── syslog-ng-test.conf
+├── syslog-ng.conf.tmpl
+└── VERSION
+
+2 directories, 11 files
+
+.gitignore:
+# Environment and secrets
+.env
+
+# Build artifacts
+*.log
+*.pid
+syslog-ng.persist
+
+# Test files
+test_logs/
+*.test
+
+# Docker
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+CHANGELOG.md:
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2025-08-04
+
+### Added
+- Initial production-ready release of Syslog to SentinelOne SDL HEC Bridge
+- Support for Linux/Unix system logs with enhanced metadata
+- Support for FortiGate firewall logs with comprehensive security context
+- Support for ZScaler proxy logs with web security event details
+- Rootless container implementation for improved security
+- Environment-based configuration via .env file
+- Comprehensive documentation and examples
+
+### Changed
+- Updated syslog-ng configuration with optimized performance settings
+- Improved log matching patterns for better accuracy
+- Enhanced error handling and logging
+- Optimized Docker build and runtime configuration
+
+### Fixed
+- Resolved permission issues in container startup
+- Fixed environment variable handling in syslog-ng configuration
+- Improved log message formatting and metadata enrichment
+
+## [0.1.0] - 2025-08-01
+
+### Added
+- Initial project setup and basic configuration
+- Support for receiving syslog messages over UDP
+- Basic forwarding to SentinelOne SDL HEC endpoint
+- Docker and docker-compose configuration
+
+Dockerfile:
+# Syslog to SentinelOne SDL HEC Bridge
+# Rootless container based on official balabit/syslog-ng
+
+FROM balabit/syslog-ng:4.9.0
+
+ENV SYSLOG_NG_OPTS="--no-caps --default-modules=affile,afprog,afsocket,afuser,basicfuncs,csvparser,dbparser,syslogformat,system-source"
+
+# Runtime dependencies (adds gettext-base for envsubst)
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        tzdata \
+        gettext-base; \
+    rm -rf /var/lib/apt/lists/*; \
+    mkdir -p /var/run/syslog-ng /var/cache/syslog-ng /var/lib/syslog-ng /var/log/syslog-ng
+
+# Template and entry-point
+COPY --chmod=644 syslog-ng.conf.tmpl /etc/syslog-ng/
+COPY --chmod=755 entrypoint.sh          /entrypoint.sh
+
+EXPOSE 5514/udp
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD [ "sh", "-c", "test -e /var/run/syslog-ng.pid && kill -0 $(cat /var/run/syslog-ng.pid) 2>/dev/null" ]
+
+WORKDIR /var/lib/syslog-ng
+USER 911:911
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["syslog-ng", "-F", "--no-caps", "--enable-core"]
+
+LABEL maintainer="Your Team <team@example.com>" \
+      version="1.0.0" \
+      description="Syslog to SentinelOne SDL HEC Bridge" \
+      org.opencontainers.image.authors="Your Team <team@example.com>" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.title="Syslog to SentinelOne SDL HEC Bridge" \
+      org.opencontainers.image.description="A production-ready syslog-ng container that forwards logs to SentinelOne SDL via HEC API"
+
+PLAN.md:
+# Syslog to SentinelOne SDL HEC Bridge - Development Plan
+
+## Project Overview
+A production-ready, containerized service that receives traditional syslog messages from various on-premise sources and forwards them to the SentinelOne Singularity Data Lake (SDL) using the HTTP Event Collector (HEC) API.
+
+## Version 1.0 - Production Ready
+
+### Core Features
+- [x] Rootless container implementation (UID/GID 1000)
+- [x] End-to-end HEC forwarding to SentinelOne SDL
+- [x] Dynamic parser assignment with source matching
+- [x] FortiGate firewall log support with comprehensive metadata
+- [x] ZScaler proxy log support with comprehensive metadata
+- [x] Linux/Unix system log support with security categorization
+- [x] UDP port 5514 for rootless operation
+- [x] Production-ready architecture with batching, compression, retries
+- [x] Sample log files and testing framework
+- [x] Comprehensive documentation and README
+
+### Technical Architecture
+- **Core Engine:** syslog-ng 4.9.0 for high-performance log processing
+- **Target Endpoint:** `/services/collector/raw` HEC endpoint
+- **Parser Assignment:** Dynamic assignment via sourcetype parameter
+- **Containerization:** Docker with non-root user (1000:1000)
+- **Configuration:** Environment-based via .env file
+- **Security:** Rootless container, no privileged ports required
+
+### Supported Log Sources
+1. **Linux/Unix Systems** → `linuxSyslog` parser
+2. **FortiGate Firewall** → `fortiGate` parser
+3. **ZScaler Proxy** → `zscaler` parser
+
+## Implementation Details
+
+### Configuration
+- Environment variables for all sensitive configuration
+- Custom entrypoint for dynamic user/group creation
+- syslog-ng configuration with optimized batching and retries
+
+### Metadata Enrichment
+- Source-specific metadata fields for each log type
+- Standardized fields including:
+  - `dataSource.category`, `dataSource.vendor`, `dataSource.name`
+  - `metadata.version`, `metadata.product.vendor_name`, `metadata.product.name`
+  - `severity_id`, `category_uid`, `category_name`
+
+## Testing Strategy
+1. **Local Testing:**
+   - Send test messages to UDP port 5514
+   - Verify reception in container logs
+2. **Remote Verification:**
+   - Query SentinelOne API to confirm log ingestion
+   - Verify correct parser assignment via `sourcetype`
+
+## Future Enhancements
+- Add support for additional log sources
+- Implement configurable log filtering and transformation
+- Add Prometheus metrics endpoint
+- Create Kubernetes deployment manifests
+- Implement log rotation and retention policies
+
+---
+*Last Updated: 2025-08-04 - Production Release*
+
+README.md:
+# Syslog to SentinelOne SDL HEC Bridge
+
+**Version:** 1.0.0  
+**Status:** Production Ready  
+**Last Updated:** 2025-08-04  
+**Docker Image:** `ghcr.io/your-org/syslog-s1-bridge:1.0.0`
+
+## Overview
+
+A production-ready, containerized service that receives traditional syslog messages from various on-premise sources and forwards them to the SentinelOne Singularity Data Lake (SDL) using the HTTP Event Collector (HEC) API. The service is designed for security operations, providing rich metadata and context for security analytics.
+
+## Key Features
+
+- **High-Performance Log Processing**
+  - Built on **syslog-ng** with optimized configuration
+  - Multi-threaded processing for high throughput
+  - Batching and compression for efficient network usage
+
+- **Comprehensive Log Source Support**
+  - Linux/Unix system logs with security context
+  - FortiGate firewall logs with security event details
+  - ZScaler proxy logs with web security events
+
+- **Enterprise-Grade Deployment**
+  - Rootless container for enhanced security
+  - Environment-based configuration
+  - Health checks and monitoring
+  - Resource constraints and limits
+
+- **Reliable Delivery**
+  - Automatic retries on failure
+  - Connection pooling and keepalive
+  - Configurable timeouts and batch sizes
+
+## Architecture
+
+```
+┌─────────────────┐    ┌───────────────────────┐    ┌───────────────────────┐
+│                 │    │                       │    │                       │
+│  Syslog        │───▶│  syslog-ng Container  │───▶│  SentinelOne SDL     │
+│  Sources       │    │  (UDP/5514)          │    │  HEC API             │
+│                 │    │                       │    │                       │
+└─────────────────┘    └───────────────────────┘    └───────────────────────┘
+      ▲                                                       ▲
+      │                                                       │
+      └───────────────────────────────────────────────────────┘
+                      Configuration via .env
+```
+
+### Supported Log Sources
+
+| Source Type | Parser Assignment | Example Matchers |
+|-------------|-------------------|------------------|
+| **Linux/Unix Systems** | `linuxSyslog` | `sshd`, `systemd`, `kernel`, `cron`, `authpriv` |
+| **FortiGate Firewall** | `marketplace-fortinetfortigate-latest` | `devname="FortiGate"`, `type="traffic"`, `logid="0000000013"` |
+| **ZScaler Proxy** | `marketplace-zscalerinternetaccess-latest` | `product="NSS"`, `vendor="Zscaler"`, `action="Allow"` |
+
+## Quick Start
+
+### Prerequisites
+
+- Docker and Docker Compose
+- SentinelOne HEC tokens (write and read)
+
+### Setup
+
+1. **Clone and configure:**
+   ```bash
+   git clone <repository-url>
+   cd syslog
+   cp .env.example .env
+   # Edit .env with your SentinelOne tokens
+   ```
+
+2. **Build and start:**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+3. **Test syslog reception:**
+   ```bash
+   # Test Linux log
+   echo "<134>$(date '+%b %d %H:%M:%S') ubuntu-server sshd[12345]: Accepted publickey for admin" | \
+   docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
+   /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
+   
+   # Test FortiGate log
+   cat samples/fortigate-sample.log | \
+   docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
+   /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
+   
+   # Test ZScaler log
+   cat samples/zscaler-sample.log | \
+   docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
+   /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
+   ```
+
+4. **View logs:**
+   ```bash
+   docker-compose logs -f syslog-bridge
+   ```
+
+## Configuration
+
+All configuration is managed through the `.env` file:
+
+```bash
+# SentinelOne Configuration
+S1_HEC_WRITE_TOKEN=your_write_token_here
+S1_HEC_READ_TOKEN=your_read_token_here
+S1_HEC_URL=https://ingest.us1.sentinelone.net
+
+# Syslog Configuration
+PORT1_PROTOCOL=udp
+PORT1_NUMBER=5514
+PORT1_TYPE=rfc3164
+USER_ID=1000
+GROUP_ID=1000
+```
+
+## Development
+
+### Project Structure
+
+```
+.
+├── Dockerfile              # Container build configuration
+├── docker-compose.yml      # Service orchestration
+├── syslog-ng.conf         # syslog-ng configuration
+├── .env                   # Environment variables (not in repo)
+├── .env.example          # Environment template
+├── README.md             # This file
+├── PLAN.md              # Development roadmap
+└── .gitignore           # Git exclusions
+```
+
+### Testing
+
+**Local Testing:**
+- Send test messages to UDP port 514
+- Verify reception in container logs
+
+**Remote Verification:**
+- Query SentinelOne API to confirm log ingestion
+- Verify correct parser assignment via `sourcetype`
+
+## Version History
+
+### v1.0 (2025-08-04) - Production Ready
+- ✅ Complete rootless container implementation (UID/GID 1000)
+- ✅ End-to-end HEC forwarding to SentinelOne SDL verified
+- ✅ Dynamic parser assignment with source matching
+- ✅ FortiGate firewall log support with comprehensive metadata
+- ✅ ZScaler proxy log support with comprehensive metadata
+- ✅ Linux/Unix system log support with security categorization
+- ✅ UDP port 5514 for rootless operation
+- ✅ Production-ready architecture with batching, compression, retries
+- ✅ Sample log files and testing framework
+- ✅ Comprehensive documentation and README
+
+### Previous Versions
+#### v0.1 (2025-08-01)
+- ✅ Initial project structure and basic syslog-ng configuration
+- ✅ Docker containerization foundation
+- ✅ Environment-based configuration framework
+
+## Support
+
+For issues and questions, please refer to the project documentation or create an issue in the repository.
+
+---
+*Built with ❤️ for secure, scalable log forwarding*
+
+docker-compose.yml:
+services:
+  bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: syslog
+    ports:
+      - "5514:5514/udp"
+    volumes:
+      - syslog_data:/var/lib/syslog-ng
+      - syslog_logs:/var/log/syslog-ng
+    environment:
+      - S1_HEC_HOST=https://ingest.us1.sentinelone.net
+      - S1_HEC_WRITE_TOKEN=0DoK5f5k2bU/R646lUERpkQLlNCa5mU315aZPbqhT6Uc-
+      - SYSLOG_HOST=${SYSLOG_HOST:-syslog-bridge}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep syslog-ng || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  syslog_data:
+  syslog_logs:
+
+entrypoint.sh:
+#!/bin/bash
+set -euo pipefail
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
+
+TEMPLATE=/etc/syslog-ng/syslog-ng.conf.tmpl
+RENDERED=/tmp/syslog-ng.conf
+
+envsubst < "$TEMPLATE" > "$RENDERED"
+
+log "Verifying configuration…"
+if ! /usr/sbin/syslog-ng -s -f "$RENDERED"; then
+  log "ERROR: configuration check failed"
+  exit 1
+fi
+
+log "Starting syslog-ng…"
+exec /usr/sbin/syslog-ng -F --no-caps -f "$RENDERED"
+
+syslog-ng-test.conf:
+@version: 4.9
+@include "scl.conf"
+
+options {
+    threaded(yes);
+    chain_hostnames(off);
+    flush_lines(0);
+    use_dns(no);
+    use_fqdn(no);
+};
+
+source s_network {
+    udp(ip(0.0.0.0) port(5514));
+};
+
+destination d_stdout {
+    file("/dev/stdout");
+};
+
+log {
+    source(s_network);
+    destination(d_stdout);
+};

@@ -4,38 +4,49 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: syslog
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     ports:
-      - "5514:5514/udp"
+      - "${PORT1_NUMBER:-5514}:${PORT1_NUMBER:-5514}/${PORT1_PROTOCOL:-udp}"
+
+    # Persistent state & logs
     volumes:
       - syslog_data:/var/lib/syslog-ng
       - syslog_logs:/var/log/syslog-ng
-    env_file: .env
+
     environment:
-      - USER_ID=${USER_ID:-1000}
-      - GROUP_ID=${GROUP_ID:-1000}
+      # Pass through all environment variables from .env
+      - S1_HEC_URL=${S1_HEC_URL:-ingest.us1.sentinelone.net}
+      - S1_HEC_WRITE_TOKEN=${S1_HEC_WRITE_TOKEN}
+      - SYSLOG_HOST=${SYSLOG_HOST:-SYSLOG_SHIPPER}
+      - PORT1_NUMBER=${PORT1_NUMBER:-5514}
+      - PORT1_PROTOCOL=${PORT1_PROTOCOL:-udp}
+
     restart: unless-stopped
+
     healthcheck:
-      test: ["CMD-SHELL", "pgrep syslog-ng"]
+      test: ["CMD-SHELL","pgrep syslog-ng || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-    
-    # Resource limits
+      start_period: 10s
+
     deploy:
       resources:
         limits:
           memory: 256M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 128M
-          cpus: '0.25'
-    
-    # Logging configuration
+          cpus: "0.25"
+
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+
 volumes:
   syslog_data:
+    driver: local
   syslog_logs:
+    driver: local
