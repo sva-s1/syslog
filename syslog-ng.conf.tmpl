@@ -7,14 +7,11 @@ options {
     flush_lines(0);
     use_dns(no);
     use_fqdn(no);
-    keep_hostname(yes);
-    keep_timestamp(yes);
+    keep_hostname(no);
+    keep_timestamp(no);
     time_reopen(10);
     use_uniqid(yes);
-    stats(
-        level(3)
-        freq(3600)
-    );
+    stats(level(3) freq(3600));
 };
 
 source s_network {
@@ -24,10 +21,37 @@ source s_network {
         port(5514)
         so_rcvbuf(425984)
         log-iw-size(10000)
+        flags(no-parse)
     );
 };
 
-destination d_stdout { file("/dev/stdout"); };
+rewrite r_strip_pri { subst("^<[0-9]{1,3}>", "", value("MESSAGE"), type("pcre")); };
+filter  f_zscaler   { message("^<[0-9]{1,3}>\\{\"datetime\""); };
+parser  p_syslog    { syslog-parser(); };
+
+destination d_stdout {
+    file("/dev/stdout" template("LOG ▶ $MESSAGE\n"));
+};
+
+destination d_sentinelone_zscaler {
+    http(
+        url("https://${S1_HEC_URL}/services/collector/event?sourcetype=marketplace-zscalerinternetaccess-latest&dataSource.category=security&dataSource.name=Zscaler%20Internet%20Access&dataSource.vendor=Zscaler&metadata.version=1.0.0&metadata.product.vendor_name=Zscaler&metadata.product.name=ZIA&category_uid=4&category_name=Network%20Activity")
+        headers(
+            "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
+            "Content-Type: application/json"
+        )
+        body("${MESSAGE}\n")
+        method("POST")
+        content-compression("gzip")
+        batch-lines(500)
+        batch-bytes(1M)
+        batch-timeout(1000)
+        retries(3)
+        workers(2)
+        time-reopen(60)
+        tls(peer-verify(no) ca-dir("/etc/ssl/certs"))
+    );
+};
 
 destination d_sentinelone_linux {
     http(
@@ -45,10 +69,7 @@ destination d_sentinelone_linux {
         retries(3)
         workers(2)
         time-reopen(60)
-        tls(
-            peer-verify(no)
-            ca-dir("/etc/ssl/certs")
-        )
+        tls(peer-verify(no) ca-dir("/etc/ssl/certs"))
     );
 };
 
@@ -68,33 +89,7 @@ destination d_sentinelone_fortigate {
         retries(3)
         workers(2)
         time-reopen(60)
-        tls(
-            peer-verify(no)
-            ca-dir("/etc/ssl/certs")
-        )
-    );
-};
-
-destination d_sentinelone_zscaler {
-    http(
-        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=marketplace-zscalerinternetaccess-latest&dataSource.category=security&dataSource.name=Zscaler%20Internet%20Access&dataSource.vendor=Zscaler&metadata.version=1.0.0&metadata.product.vendor_name=Zscaler&metadata.product.name=ZIA&category_uid=4&category_name=Network%20Activity")
-        headers(
-            "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
-            "Content-Type: text/plain"
-        )
-        body("<${PRI}>${MSGHDR}${MSG}")
-        method("POST")
-        content-compression("gzip")
-        batch-lines(500)
-        batch-bytes(1M)
-        batch-timeout(1000)
-        retries(3)
-        workers(2)
-        time-reopen(60)
-        tls(
-            peer-verify(no)
-            ca-dir("/etc/ssl/certs")
-        )
+        tls(peer-verify(no) ca-dir("/etc/ssl/certs"))
     );
 };
 
@@ -105,7 +100,7 @@ destination d_sentinelone_fallback {
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
         )
-        body("<${PRI}>${MSGHDR}${MSG}")
+        body("${MESSAGE}")
         method("POST")
         content-compression("gzip")
         batch-lines(100)
@@ -114,16 +109,24 @@ destination d_sentinelone_fallback {
         retries(2)
         workers(1)
         time-reopen(60)
-        tls(
-            peer-verify(no)
-            ca-dir("/etc/ssl/certs")
-        )
+        tls(peer-verify(no) ca-dir("/etc/ssl/certs"))
     );
 };
 
 log {
     source(s_network);
+    filter(f_zscaler);
+    rewrite(r_strip_pri);
     destination(d_stdout);
+    destination(d_sentinelone_zscaler);
+    flags(final);
+};
+
+log {
+    source(s_network);
+    parser(p_syslog);
+    destination(d_stdout);
+
     if (
         match("sshd|systemd|kernel|cron|authpriv" value("PROGRAM")) or
         match("pam_|sudo:|su:|sshd" value("MESSAGE")) or
@@ -137,14 +140,6 @@ log {
         match("logid=\"[0-9]+" value("MESSAGE"))
     ) {
         destination(d_sentinelone_fortigate);
-    }
-    elif (
-        match("zscaler\\." value("HOST")) or
-        match("product=\"NSS\"" value("MESSAGE")) or
-        match("vendor=\"Zscaler\"" value("MESSAGE")) or
-        match("action=\"(Allow|Deny)\"" value("MESSAGE"))
-    ) {
-        destination(d_sentinelone_zscaler);
     }
     else {
         destination(d_sentinelone_fallback);
