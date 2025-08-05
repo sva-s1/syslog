@@ -1,0 +1,41 @@
+services:
+  bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: syslog
+    ports:
+      - "5514:5514/udp"
+    volumes:
+      - syslog_data:/var/lib/syslog-ng
+      - syslog_logs:/var/log/syslog-ng
+    env_file: .env
+    environment:
+      - USER_ID=${USER_ID:-1000}
+      - GROUP_ID=${GROUP_ID:-1000}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep syslog-ng"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  syslog_data:
+  syslog_logs:

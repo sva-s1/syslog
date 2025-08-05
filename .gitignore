@@ -1,3 +1,25 @@
+# Environment and secrets
 .env
 
+# Build artifacts
+*.log
+*.pid
+syslog-ng.persist
+
+# Test files
+test_logs/
+*.test
+
+# Docker
+.dockerignore
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
