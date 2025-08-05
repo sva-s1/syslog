@@ -36,7 +36,7 @@ destination d_sentinelone_linux {
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
         )
-        body("${ISODATE} ${HOST} ${MSGHDR}${MSG}")
+        body("<${PRI}>${ISODATE} ${HOST} ${MSGHDR}${MSG}")
         method("POST")
         content-compression("gzip")
         batch-lines(1000)
@@ -82,7 +82,7 @@ destination d_sentinelone_zscaler {
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
         )
-        body("${MSGHDR}${MSG}")
+        body("<${PRI}>${MSGHDR}${MSG}")
         method("POST")
         content-compression("gzip")
         batch-lines(500)
@@ -105,7 +105,7 @@ destination d_sentinelone_fallback {
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
         )
-        body("${MSGHDR}${MSG}")
+        body("<${PRI}>${MSGHDR}${MSG}")
         method("POST")
         content-compression("gzip")
         batch-lines(100)
