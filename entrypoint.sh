@@ -6,6 +6,7 @@ TEMPLATE=/etc/syslog-ng/syslog-ng.conf.tmpl
 RENDERED=/etc/syslog-ng/syslog-ng.conf
 
 # Substitute only specific environment variables in the template
+# This preserves syslog-ng variables like ${MSG}, ${PRI}, etc.
 envsubst '$S1_HEC_URL $S1_HEC_WRITE_TOKEN' < "$TEMPLATE" > "$RENDERED"
 
 # Validate the configuration

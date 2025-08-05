@@ -59,7 +59,7 @@ destination d_sentinelone_fortigate {
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
         )
-        body("${MSGHDR}${MSG}")
+        body("<${PRI}>${MSGHDR}${MSG}")
         method("POST")
         content-compression("gzip")
         batch-lines(1)
