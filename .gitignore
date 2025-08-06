@@ -1,12 +1,23 @@
-# ↓ dev noise / local artefacts only
- .DS_Store
- Thumbs.db
- *.sw[op]
- .idea/
- .vscode/
--*.log
-+*.log                  # still ignore stray logs…
-+!samples/*.log         # …but keep sample fixtures
-+!samples/**/*.log      # (covers future sub-folders)
- *.pid
- llm_status.*
+# ── dev / OS noise ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.sw[op]
+.idea/
+.vscode/
+LOCAL-ONLY/               # scripts only useful on your workstation
+*.log                      # ignore **all** log files …
+
+# ── CI fixtures you *do* want tracked ───────────────────────────
+!samples/*.log             # … except these three sample logs
+!samples/**/*.log
+
+# ── secrets / env files ─────────────────────────────────────────
+.env
+
+# ── runtime volumes ─────────────────────────────────────────────
+data/
+logs/
+syslog-ng.persist
+
+# dev-only scripts & scratch files
+LOCAL-ONLY/
