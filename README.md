@@ -1,7 +1,7 @@
 # Syslog [ROOTLESS](https://docs.docker.com/engine/security/rootless/) to SentinelOne SDL HEC Bridge
 
 **[Version](VERSION):** 1.1.0  
-**Status:** QA TESTING
+**Status:** TESTING
 **Last Updated:** 2025-08-06  
 **Docker Image:** `ghcr.io/sva-s1/syslog:1.1.0`
 
@@ -78,21 +78,24 @@ A pre-production-ready, containerized service that receives traditional syslog m
    ```
 
 3. **Test syslog reception:**
+
+   To test that the service is receiving logs, you can send sample messages to the exposed UDP port. The following commands use a temporary `alpine-nc` container to send the data, ensuring the tool is available.
+
    ```bash
-   # Test Linux log
+   # Test with a sample Linux log
    echo "<134>$(date '+%b %d %H:%M:%S') ubuntu-server sshd[12345]: Accepted publickey for admin" | \
-   docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
-   /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
+     docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
+     /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
    
-   # Test FortiGate log
+   # Test with the sample FortiGate log
    cat samples/fortigate-sample.log | \
-   docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
-   /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
+     docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
+     /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
    
-   # Test ZScaler log
+   # Test with the sample ZScaler log
    cat samples/zscaler-sample.log | \
-   docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
-   /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
+     docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
+     /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
    ```
 
 4. **View logs:**
@@ -102,7 +105,11 @@ A pre-production-ready, containerized service that receives traditional syslog m
 
 ## Configuration
 
-All configuration is managed through the `.env` file:
+All configuration is managed through the `.env` file. At container startup, the `entrypoint.sh` script substitutes variables from this file into the `syslog-ng.conf.tmpl` to generate the final `syslog-ng.conf`.
+
+**Note:** Only variables explicitly handled by the `entrypoint.sh` script (e.g., `$S1_HEC_URL`, `$S1_HEC_WRITE_TOKEN`) are substituted. This prevents accidental modification of internal syslog-ng variables.
+
+The primary variables are:
 
 ```bash
 # SentinelOne Configuration
@@ -124,16 +131,21 @@ GROUP_ID=1000
 
 ```
 .
-├── Dockerfile          # Container build configuration
-├── docker-compose.yml  # Service orchestration
-├── syslog-ng.conf      # syslog-ng configuration
-├── .env                # Environment variables (not in repo)
-├── .env.example        # Environment template
-├── CHANGELOG.md        # Changes explained
-├── README.md           # This file
-├── PLAN.md             # Development roadmap
-├── VERSION             # Project Version
-└── .gitignore          # Git exclusions
+├── Dockerfile              # Container build configuration
+├── docker-compose.yml      # Service orchestration
+├── entrypoint.sh           # Container entrypoint script
+├── syslog-ng.conf.tmpl     # syslog-ng configuration template
+├── .env                    # Environment variables (not in repo)
+├── .env.example            # Environment template
+├── CHANGELOG.md            # Changes explained
+├── README.md               # This file
+├── PLAN.md                 # Development roadmap
+├── VERSION                 # Project Version
+├── samples/                # Directory with sample log files for testing
+│   ├── fortigate-sample.log
+│   ├── linux-sample.log
+│   └── zscaler-sample.log
+└── .gitignore              # Git exclusions
 ```
 
 ### Testing
@@ -148,7 +160,7 @@ GROUP_ID=1000
 
 ## Version History
 
-### v1.0 (2025-08-04) - Production Ready
+### v1.0 (2025-08-04) - QA Ready
 - ✅ Complete rootless container implementation (UID/GID 1000)
 - ✅ End-to-end HEC forwarding to SentinelOne SDL verified
 - ✅ Dynamic parser assignment with source matching
@@ -165,6 +177,12 @@ GROUP_ID=1000
 - ✅ Initial project structure and basic syslog-ng configuration
 - ✅ Docker containerization foundation
 - ✅ Environment-based configuration framework
+
+## Roadmap
+
+- **TLS Encryption:** Support for TLS-encrypted syslog forwarding using self-hosted or bring-your-own certificates (CA).
+- **Additional Log Sources:** Integration with other common security appliances and applications.
+- **Externalized Configuration:** Support for mounting configuration files from the host, enabling dynamic reloads without rebuilding the container.
 
 ## Support
 

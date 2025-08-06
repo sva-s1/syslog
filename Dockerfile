@@ -1,5 +1,8 @@
 FROM balabit/syslog-ng:4.9.0
 
+# Add OCI label for source repository
+LABEL org.opencontainers.image.source=https://github.com/sva-s1/syslog
+
 # Install required packages
 RUN set -eux; \
     apt-get update; \
@@ -25,3 +28,4 @@ USER 1000:1000
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["syslog-ng","-F","--no-caps"]
+
