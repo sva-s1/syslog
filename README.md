@@ -1,13 +1,13 @@
-# Syslog to SentinelOne SDL HEC Bridge
+# Syslog [ROOTLESS](https://docs.docker.com/engine/security/rootless/) to SentinelOne SDL HEC Bridge
 
-**Version:** 1.0.0  
-**Status:** Production Ready  
-**Last Updated:** 2025-08-04  
-**Docker Image:** `ghcr.io/your-org/syslog-s1-bridge:1.0.0`
+**[Version](VERSION):** 1.1.0  
+**Status:** QA TESTING
+**Last Updated:** 2025-08-06  
+**Docker Image:** `ghcr.io/sva-s1/syslog:1.1.0`
 
 ## Overview
 
-A production-ready, containerized service that receives traditional syslog messages from various on-premise sources and forwards them to the SentinelOne Singularity Data Lake (SDL) using the HTTP Event Collector (HEC) API. The service is designed for security operations, providing rich metadata and context for security analytics.
+A pre-production-ready, containerized service that receives traditional syslog messages from various appliances/virtual-appliances/apps syslog sources and forwards them to the SentinelOne Singularity Data Lake (SDL) using the HTTP Event Collector (HEC) API. The service is designed for security operations, providing rich metadata and context for security analytics.
 
 ## Key Features
 
@@ -37,8 +37,8 @@ A production-ready, containerized service that receives traditional syslog messa
 ```
 ┌─────────────────┐    ┌───────────────────────┐    ┌───────────────────────┐
 │                 │    │                       │    │                       │
-│  Syslog        │───▶│  syslog-ng Container  │───▶│  SentinelOne SDL     │
-│  Sources       │    │  (UDP/5514)          │    │  HEC API             │
+│  Syslog         │───▶│  syslog-ng Container  │───▶│  SentinelOne SDL      │
+│  Sources        │    │  (UDP/5514)           │    │  HEC API              │
 │                 │    │                       │    │                       │
 └─────────────────┘    └───────────────────────┘    └───────────────────────┘
       ▲                                                       ▲
@@ -47,20 +47,20 @@ A production-ready, containerized service that receives traditional syslog messa
                       Configuration via .env
 ```
 
-### Supported Log Sources
+###  Example Log Sources
 
 | Source Type | Parser Assignment | Example Matchers |
 |-------------|-------------------|------------------|
 | **Linux/Unix Systems** | `linuxSyslog` | `sshd`, `systemd`, `kernel`, `cron`, `authpriv` |
 | **FortiGate Firewall** | `marketplace-fortinetfortigate-latest` | `devname="FortiGate"`, `type="traffic"`, `logid="0000000013"` |
-| **ZScaler Proxy** | `marketplace-zscalerinternetaccess-latest` | `product="NSS"`, `vendor="Zscaler"`, `action="Allow"` |
+| **ZScaler Internet Access** | `marketplace-zscalerinternetaccess-latest` | `product="NSS"`, `vendor="Zscaler"`, `action="Allow"` |
 
 ## Quick Start
 
 ### Prerequisites
 
 - Docker and Docker Compose
-- SentinelOne HEC tokens (write and read)
+- SentinelOne HEC write token(s)
 
 ### Setup
 
@@ -69,7 +69,7 @@ A production-ready, containerized service that receives traditional syslog messa
    git clone <repository-url>
    cd syslog
    cp .env.example .env
-   # Edit .env with your SentinelOne tokens
+   # Edit .env with your SentinelOne token(s)
    ```
 
 2. **Build and start:**
@@ -107,7 +107,7 @@ All configuration is managed through the `.env` file:
 ```bash
 # SentinelOne Configuration
 S1_HEC_WRITE_TOKEN=your_write_token_here
-S1_HEC_READ_TOKEN=your_read_token_here
+S1_HEC_READ_TOKEN=your_read_token_here # <- Optional to TEST via API query
 S1_HEC_URL=https://ingest.us1.sentinelone.net
 
 # Syslog Configuration
@@ -124,14 +124,16 @@ GROUP_ID=1000
 
 ```
 .
-├── Dockerfile              # Container build configuration
-├── docker-compose.yml      # Service orchestration
-├── syslog-ng.conf         # syslog-ng configuration
-├── .env                   # Environment variables (not in repo)
-├── .env.example          # Environment template
-├── README.md             # This file
-├── PLAN.md              # Development roadmap
-└── .gitignore           # Git exclusions
+├── Dockerfile          # Container build configuration
+├── docker-compose.yml  # Service orchestration
+├── syslog-ng.conf      # syslog-ng configuration
+├── .env                # Environment variables (not in repo)
+├── .env.example        # Environment template
+├── CHANGELOG.md        # Changes explained
+├── README.md           # This file
+├── PLAN.md             # Development roadmap
+├── VERSION             # Project Version
+└── .gitignore          # Git exclusions
 ```
 
 ### Testing

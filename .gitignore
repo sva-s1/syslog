@@ -11,3 +11,5 @@ Thumbs.db
 *.swp
 *.swo
 *~
+llm_status.sh
+llm_status.txt
