@@ -1,17 +1,12 @@
 # ↓ dev noise / local artefacts only
-.DS_Store
-Thumbs.db
-*.sw[op]
-.idea/
-.vscode/
-*.log
-*.pid
-llm_status.*
-
-# ↓ secrets handled via GitHub Actions
-.env
-
-# ↓ runtime volumes
-syslog-ng.persist
-data/
-logs/
+ .DS_Store
+ Thumbs.db
+ *.sw[op]
+ .idea/
+ .vscode/
+-*.log
++*.log                  # still ignore stray logs…
++!samples/*.log         # …but keep sample fixtures
++!samples/**/*.log      # (covers future sub-folders)
+ *.pid
+ llm_status.*
