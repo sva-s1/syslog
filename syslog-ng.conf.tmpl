@@ -35,10 +35,10 @@ destination d_stdout {
 
 destination d_sentinelone_zscaler {
     http(
-        url("https://${S1_HEC_URL}/services/collector/event?sourcetype=marketplace-zscalerinternetaccess-latest&dataSource.category=security&dataSource.name=Zscaler%20Internet%20Access&dataSource.vendor=Zscaler&metadata.version=1.0.0&metadata.product.vendor_name=Zscaler&metadata.product.name=ZIA&category_uid=4&category_name=Network%20Activity")
+        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=marketplace-zscalerinternetaccess-latest&dataSource.category=security&dataSource.name=Zscaler%20Internet%20Access&dataSource.vendor=Zscaler&metadata.version=1.0.0&metadata.product.vendor_name=Zscaler&metadata.product.name=ZIA&category_uid=4&category_name=Network%20Activity")
         headers(
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
-            "Content-Type: application/json"
+            "Content-Type: text/plain"
         )
         body("${MESSAGE}\n")
         method("POST")

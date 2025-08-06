@@ -28,4 +28,3 @@ USER 1000:1000
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["syslog-ng","-F","--no-caps"]
-

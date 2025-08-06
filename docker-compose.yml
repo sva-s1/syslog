@@ -15,7 +15,6 @@ services:
       # Pass through all environment variables from .env
       - S1_HEC_URL=${S1_HEC_URL:-ingest.us1.sentinelone.net}
       - S1_HEC_WRITE_TOKEN=${S1_HEC_WRITE_TOKEN}
-      - SYSLOG_HOST=${SYSLOG_HOST:-SYSLOG_SHIPPER}
       - PORT1_NUMBER=${PORT1_NUMBER:-5514}
       - PORT1_PROTOCOL=${PORT1_PROTOCOL:-udp}
 

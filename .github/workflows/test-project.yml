@@ -1,0 +1,52 @@
+name: Test Project
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+
+jobs:
+
+  test-project:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.API_TOKEN }}
+        
+    - name: Start Docker Compose
+      run: |
+        docker compose up -d
+        
+    - name: Test Linux Logs
+      run: |
+        # Update the datetime in the sample log
+        CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
+        sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" samples/linux-sample.log | \
+        docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER:-5514}"
+        
+    - name: Test FortiGate Logs  
+      run: |
+        # Update the datetime in the sample log
+        CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
+        sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" samples/fortigate-sample.log | \
+        docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER:-5514}"
+        
+    - name: Test ZScaler Logs
+      run: |
+        # Update the datetime in the sample log
+        CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
+        sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" samples/zscaler-sample.log | \
+        docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER:-5514}"
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        docker compose down
+        rm -f .env.example
