@@ -1,55 +1,70 @@
-name: Test Project
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '*/15 * * * *'
-  push:
-    branches: ['**']
+---                       # document-start (keeps yamllint quiet)
 
-env:                     # ↙︎ pull once, reuse everywhere
-  IMAGE_NC:   ghcr.io/sva-s1/alpine-nc:latest
-  IMAGE_SYS:  ghcr.io/sva-s1/syslog:latest
-  PORT1_NUM:  ${{ vars.PORT1_NUMBER }}
-  PORT1_PROTO:${{ vars.PORT1_PROTOCOL }}
+# yamllint disable rule:truthy
+name: Test Project
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "*/15 * * * *"
+  push:
+    branches:
+      - "**"
+# yamllint enable rule:truthy
 
 jobs:
-  e2e:
+  test-project:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      - uses: docker/login-action@v2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.API_TOKEN }}
 
-      - name: Pull test images
-        run: |
-          docker pull $IMAGE_NC
-          docker pull $IMAGE_SYS
+      - name: Start Docker Compose
+        run: docker compose up -d
 
-      - name: Spin up syslog-ng
+      - name: Test Linux logs
+        env:
+          PORT1_NUMBER: ${{ vars.PORT1_NUMBER || '5514' }}
         run: |
-          echo "S1_HEC_WRITE_TOKEN=${{ secrets.S1_HEC_WRITE_TOKEN }}"   > .env
-          echo "S1_HEC_URL=${{ vars.S1_HEC_URL }}"                     >> .env
-          echo "PORT1_NUMBER=$PORT1_NUM"                               >> .env
-          echo "PORT1_PROTOCOL=$PORT1_PROTO"                           >> .env
-          docker compose up -d
+          CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
+          sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" \
+            samples/linux-sample.log |
+            docker run -i --rm --network host \
+              ghcr.io/sva-s1/alpine-nc:latest \
+              /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER}"
 
-      - name: Blast sample logs
+      - name: Test FortiGate logs
+        env:
+          PORT1_NUMBER: ${{ vars.PORT1_NUMBER || '5514' }}
         run: |
-          send () {
-            sed -e "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$(date '+%Y-%m-%d %H:%M:%S')\"/" "$1" |
-            docker run -i --rm \
-              --add-host host.docker.internal:host-gateway \
-              $IMAGE_NC /bin/ash -c "nc -u -w2 host.docker.internal $PORT1_NUM"
-          }
-          send samples/linux-sample.log
-          send samples/fortigate-sample.log
-          send samples/zscaler-sample.log
+          CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
+          sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" \
+            samples/fortigate-sample.log |
+            docker run -i --rm --network host \
+              ghcr.io/sva-s1/alpine-nc:latest \
+              /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER}"
 
-      - name: Teardown
+      - name: Test Zscaler logs
+        env:
+          PORT1_NUMBER: ${{ vars.PORT1_NUMBER || '5514' }}
+        run: |
+          CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
+          sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" \
+            samples/zscaler-sample.log |
+            docker run -i --rm --network host \
+              ghcr.io/sva-s1/alpine-nc:latest \
+              /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER}"
+
+      - name: Cleanup
         if: always()
-        run: docker compose down -v
-        rm -f .env        # wipe the temp file
+        run: |
+          docker compose down
+          rm -f .env.example
