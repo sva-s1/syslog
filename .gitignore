@@ -15,5 +15,3 @@ llm_status.*
 syslog-ng.persist
 data/
 logs/
-
-- samples/
