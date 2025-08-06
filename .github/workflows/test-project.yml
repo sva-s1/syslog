@@ -27,6 +27,13 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.API_TOKEN }}
 
+      - name: Write .env for compose
+        run: |
+          echo "S1_HEC_WRITE_TOKEN=${{ secrets.S1_HEC_WRITE_TOKEN }}"  > .env
+          echo "S1_HEC_URL=${{ vars.S1_HEC_URL }}"                    >> .env
+          echo "PORT1_NUMBER=${{ vars.PORT1_NUMBER || '5514' }}"      >> .env
+          echo "PORT1_PROTOCOL=${{ vars.PORT1_PROTOCOL || 'udp' }}"   >> .env
+
       - name: Start Docker Compose
         run: docker compose up -d
 
@@ -34,6 +41,7 @@ jobs:
         env:
           PORT1_NUMBER: ${{ vars.PORT1_NUMBER || '5514' }}
         run: |
+          set -euo pipefail
           CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
           sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" \
             samples/linux-sample.log |
@@ -45,6 +53,7 @@ jobs:
         env:
           PORT1_NUMBER: ${{ vars.PORT1_NUMBER || '5514' }}
         run: |
+          set -euo pipefail
           CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
           sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" \
             samples/fortigate-sample.log |
@@ -56,6 +65,7 @@ jobs:
         env:
           PORT1_NUMBER: ${{ vars.PORT1_NUMBER || '5514' }}
         run: |
+          set -euo pipefail
           CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
           sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" \
             samples/zscaler-sample.log |
