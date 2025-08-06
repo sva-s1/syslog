@@ -5,8 +5,10 @@ name: test-project
 
 on:
   workflow_dispatch: {}
-  schedule:
-    - cron: "*/15 * * * *"
+    # EDT – roughly March through October
+    - cron: "*/15 13-21 * 3-10 1-5"
+    # EST – roughly November through February
+    - cron: "*/15 14-22 * 11,12,1,2 1-5"
   push:
     branches:
       - "**"
