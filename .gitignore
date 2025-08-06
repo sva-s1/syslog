@@ -1,15 +1,17 @@
-# keep template and entrypoint in context – exclude only obvious junk
-.env
-*.log
-syslog-ng.persist
-test_logs/
-samples/
+# ↓ dev noise / local artefacts only
 .DS_Store
 Thumbs.db
-.vscode/
+*.sw[op]
 .idea/
-*.swp
-*.swo
-*~
-llm_status.sh
-llm_status.txt
+.vscode/
+*.log
+*.pid
+llm_status.*
+
+# ↓ secrets handled via GitHub Actions
+.env
+
+# ↓ runtime volumes
+syslog-ng.persist
+data/
+logs/

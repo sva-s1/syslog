@@ -1,0 +1,42 @@
+name: build-syslog
+on:
+  push:
+    paths:
+      - 'Dockerfiles/syslog-ng-rootless/**'
+      - 'entrypoint.sh'
+      - 'syslog-ng.conf.tmpl'
+      - '.github/workflows/build-syslog.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.API_TOKEN }}
+
+      - name: Bump patch version
+        run: |
+          v=$(cat VERSION); IFS='.' read -ra p <<< "$v"
+          echo "${p[0]}.${p[1]}.$((p[2]+1))" > VERSION
+          echo "NEW_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfiles/syslog-ng-rootless/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/sva-s1/syslog:${{ env.NEW_VERSION }}
+            ghcr.io/sva-s1/syslog:latest
+          platforms: linux/amd64,linux/arm64
