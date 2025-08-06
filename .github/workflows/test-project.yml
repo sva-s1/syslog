@@ -35,7 +35,7 @@ jobs:
         # Update the datetime in the sample log
         CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
         sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" samples/linux-sample.log | \
-        docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER:-5514}"
+        docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest /bin/ash -c "nc -u -w 2 127.0.0.1 5514"
         
     - name: Test FortiGate Logs  
       run: |
