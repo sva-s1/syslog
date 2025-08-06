@@ -1,7 +1,7 @@
 ---                       # document-start (keeps yamllint quiet)
 
 # yamllint disable rule:truthy
-name: Test Project
+name: test-project
 
 on:
   workflow_dispatch: {}
