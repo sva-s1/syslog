@@ -1,6 +1,6 @@
 ---                       # yamllint: document-start
 
-name: Test Project
+name: test-project
 
 on:
   workflow_dispatch: {}  # yamllint disable-line truthy
