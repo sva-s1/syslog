@@ -1,6 +1,6 @@
 # Syslog [ROOTLESS](https://docs.docker.com/engine/security/rootless/) to SentinelOne SDL HEC Bridge
 
-**[Version](VERSION):** 1.1.0  
+**[Version](VERSION):** 1.1.5  
 **Status:** TESTING
 **Last Updated:** 2025-08-06  
 **Docker Image:** `ghcr.io/sva-s1/syslog:1.1.0`
@@ -12,16 +12,19 @@ A pre-production-ready, containerized service that receives traditional syslog m
 ## Key Features
 
 - **High-Performance Log Processing**
+
   - Built on **syslog-ng** with optimized configuration
   - Multi-threaded processing for high throughput
   - Batching and compression for efficient network usage
 
 - **Comprehensive Log Source Support**
+
   - Linux/Unix system logs with security context
   - FortiGate firewall logs with security event details
   - ZScaler proxy logs with web security events
 
 - **Enterprise-Grade Deployment**
+
   - Rootless container for enhanced security
   - Environment-based configuration
   - Health checks and monitoring
@@ -47,13 +50,13 @@ A pre-production-ready, containerized service that receives traditional syslog m
                       Configuration via .env
 ```
 
-###  Example Log Sources
+### Example Log Sources
 
-| Source Type | Parser Assignment | Example Matchers |
-|-------------|-------------------|------------------|
-| **Linux/Unix Systems** | `linuxSyslog` | `sshd`, `systemd`, `kernel`, `cron`, `authpriv` |
-| **FortiGate Firewall** | `marketplace-fortinetfortigate-latest` | `devname="FortiGate"`, `type="traffic"`, `logid="0000000013"` |
-| **ZScaler Internet Access** | `marketplace-zscalerinternetaccess-latest` | `product="NSS"`, `vendor="Zscaler"`, `action="Allow"` |
+| Source Type                 | Parser Assignment                          | Example Matchers                                              |
+| --------------------------- | ------------------------------------------ | ------------------------------------------------------------- |
+| **Linux/Unix Systems**      | `linuxSyslog`                              | `sshd`, `systemd`, `kernel`, `cron`, `authpriv`               |
+| **FortiGate Firewall**      | `marketplace-fortinetfortigate-latest`     | `devname="FortiGate"`, `type="traffic"`, `logid="0000000013"` |
+| **ZScaler Internet Access** | `marketplace-zscalerinternetaccess-latest` | `product="NSS"`, `vendor="Zscaler"`, `action="Allow"`         |
 
 ## Quick Start
 
@@ -65,6 +68,7 @@ A pre-production-ready, containerized service that receives traditional syslog m
 ### Setup
 
 1. **Clone and configure:**
+
    ```bash
    git clone <repository-url>
    cd syslog
@@ -73,6 +77,7 @@ A pre-production-ready, containerized service that receives traditional syslog m
    ```
 
 2. **Build and start:**
+
    ```bash
    docker-compose up --build -d
    ```
@@ -86,12 +91,12 @@ A pre-production-ready, containerized service that receives traditional syslog m
    echo "<134>$(date '+%b %d %H:%M:%S') ubuntu-server sshd[12345]: Accepted publickey for admin" | \
      docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
      /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
-   
+
    # Test with the sample FortiGate log
    cat samples/fortigate-sample.log | \
      docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
      /bin/ash -c "nc -u -w 1 127.0.0.1 5514"
-   
+
    # Test with the sample ZScaler log
    cat samples/zscaler-sample.log | \
      docker run -i --rm --network host ghcr.io/sva-s1/alpine-nc:latest \
@@ -151,16 +156,19 @@ GROUP_ID=1000
 ### Testing
 
 **Local Testing:**
+
 - Send test messages to UDP port 514
 - Verify reception in container logs
 
 **Remote Verification:**
+
 - Query SentinelOne API to confirm log ingestion
 - Verify correct parser assignment via `sourcetype`
 
 ## Version History
 
 ### v1.0 (2025-08-04) - QA Ready
+
 - ✅ Complete rootless container implementation (UID/GID 1000)
 - ✅ End-to-end HEC forwarding to SentinelOne SDL verified
 - ✅ Dynamic parser assignment with source matching
@@ -173,7 +181,9 @@ GROUP_ID=1000
 - ✅ Comprehensive documentation and README
 
 ### Previous Versions
+
 #### v0.1 (2025-08-01)
+
 - ✅ Initial project structure and basic syslog-ng configuration
 - ✅ Docker containerization foundation
 - ✅ Environment-based configuration framework
@@ -189,4 +199,5 @@ GROUP_ID=1000
 For issues and questions, please refer to the project documentation or create an issue in the repository.
 
 ---
-*Built with ❤️ for secure, scalable log forwarding*
+
+_Built with ❤️ for secure, scalable log forwarding_
