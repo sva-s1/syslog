@@ -2,8 +2,8 @@ name: build-alpine-nc
 on:
   push:
     paths:
-      - 'Dockerfiles/alpine-nc/**'
-      - '.github/workflows/build-alpine-nc.yml'
+      - "Dockerfiles/alpine-nc/**"
+      - ".github/workflows/build-alpine-nc.yml"
   workflow_dispatch:
 
 jobs:
@@ -23,10 +23,18 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.API_TOKEN }}
 
+      - name: Bump patch version
+        run: |
+          v=$(cat VERSION); IFS='.' read -ra p <<< "$v"
+          echo "${p[0]}.${p[1]}.$((p[2]+1))" > VERSION
+          echo "NEW_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
       - uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfiles/alpine-nc/Dockerfile
           push: true
-          tags: ghcr.io/sva-s1/alpine-nc:latest
+          tags: |
+            ghcr.io/sva-s1/syslog:${{ env.NEW_VERSION }}
+            ghcr.io/sva-s1/alpine-nc:latest
           platforms: linux/amd64,linux/arm64
