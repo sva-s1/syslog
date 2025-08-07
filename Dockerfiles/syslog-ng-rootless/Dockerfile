@@ -26,3 +26,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["syslog-ng","-F","--no-caps"]
 
 
+
