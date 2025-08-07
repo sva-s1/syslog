@@ -1,4 +1,4 @@
-FROM balabit/syslog-ng:4.9.0
+FROM --platform=$BUILDPLATFORM balabit/syslog-ng:4.9.0
 LABEL org.opencontainers.image.source=https://github.com/sva-s1/syslog
 
 RUN set -eux; \
