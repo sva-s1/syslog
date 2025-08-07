@@ -8,3 +8,4 @@ RUN apk add --no-cache netcat-openbsd
 
 # Set default command
 CMD ["/bin/sh"]
+
