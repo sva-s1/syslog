@@ -35,7 +35,7 @@ destination d_stdout {
 
 destination d_sentinelone_zscaler {
     http(
-        url("https://${S1_HEC_URL}/services/collector/event?sourcetype=marketplace-zscalerinternetaccess-latest&dataSource.category=security&dataSource.name=Zscaler%20Internet%20Access&dataSource.vendor=Zscaler&metadata.version=1.0.0&metadata.product.vendor_name=Zscaler&metadata.product.name=ZIA&category_uid=4&category_name=Network%20Activity&tag_uuid=58a1a148-cda0-4583-839b-537ea7197ec8")
+        url("https://${S1_HEC_URL}/services/collector/event?sourcetype=marketplace-zscalerinternetaccess-latest&dataSource.category=security&dataSource.name=Zscaler%20Internet%20Access&dataSource.vendor=Zscaler&metadata.version=1.0.0&metadata.product.vendor_name=Zscaler&metadata.product.name=ZIA&category_uid=4&category_name=Network%20Activity")
         headers(
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: application/json"
@@ -55,7 +55,7 @@ destination d_sentinelone_zscaler {
 
 destination d_sentinelone_linux {
     http(
-        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=linuxSyslog&dataSource.category=security&dataSource.vendor=Linux&dataSource.name=System%20Logs&metadata.version=1.0.0&severity_id=6&tag_uuid=58a1a148-cda0-4583-839b-537ea7197ec8")
+        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=linuxSyslog&dataSource.category=security&dataSource.vendor=Linux&dataSource.name=System%20Logs&metadata.version=1.0.0&severity_id=6")
         headers(
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
@@ -75,7 +75,7 @@ destination d_sentinelone_linux {
 
 destination d_sentinelone_fortigate {
     http(
-        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=marketplace-fortinetfortigate-latest&dataSource.category=security&dataSource.name=FortiGate&dataSource.vendor=Fortinet&metadata.version=1.0.0&metadata.product.vendor_name=Fortinet&metadata.product.name=FortiGate&severity_id=99&category_uid=3&category_name=Network%20Activity&tag_uuid=58a1a148-cda0-4583-839b-537ea7197ec8")
+        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=marketplace-fortinetfortigate-latest&dataSource.category=security&dataSource.name=FortiGate&dataSource.vendor=Fortinet&metadata.version=1.0.0&metadata.product.vendor_name=Fortinet&metadata.product.name=FortiGate&severity_id=99&category_uid=3&category_name=Network%20Activity")
         headers(
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
