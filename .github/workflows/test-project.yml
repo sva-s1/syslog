@@ -3,7 +3,7 @@
 name: test-project
 
 on:
-  workflow_dispatch: {}  # yamllint disable-line truthy
+  workflow_dispatch: {}
 
   # every 15 min, Monday-Friday, 09-17 US-Eastern
   schedule:
@@ -15,7 +15,6 @@ on:
   push:
     branches:
       - "**"
-# yamllint enable rule:truthy
 
 jobs:
   test-project:
@@ -59,9 +58,19 @@ jobs:
           PORT1_NUMBER: ${{ vars.PORT1_NUMBER || '5514' }}
         run: |
           set -euo pipefail
-          CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
-          sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" \
-            samples/fortigate-sample.log |
+
+          # ── capture "now" once ─────────────────────────────────────────────
+          NOW_EPOCH_NS="$(date +%s%N)"           # 19-digit nanoseconds
+          NOW_EPOCH_S="${NOW_EPOCH_NS::10}"      # seconds
+
+          CURRENT_DATE="$(date -u -d "@${NOW_EPOCH_S}" '+%Y-%m-%d')"
+          CURRENT_TIME="$(date -u -d "@${NOW_EPOCH_S}" '+%H:%M:%S')"
+          EVENTTIME="${NOW_EPOCH_NS}"
+
+          sed -e "s/date=[0-9-]*/date=${CURRENT_DATE}/" \
+              -e "s/time=[0-9:]\{8\}/time=${CURRENT_TIME}/" \
+              -e "s/eventtime=[0-9]\{19\}/eventtime=${EVENTTIME}/" \
+              samples/fortigate-sample.log |
             docker run -i --rm --network host \
               ghcr.io/sva-s1/alpine-nc:latest \
               /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER}"
@@ -82,4 +91,4 @@ jobs:
         if: always()
         run: |
           docker compose down
-          rm -f .env.example
+          rm -f .env

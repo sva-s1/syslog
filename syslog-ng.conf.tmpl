@@ -29,6 +29,20 @@ rewrite r_strip_pri { subst("^<[0-9]{1,3}>", "", value("MESSAGE"), type("pcre"))
 filter  f_zscaler   { message("^<[0-9]{1,3}>\\{\"datetime\""); };
 parser  p_syslog    { syslog-parser(); };
 
+# FortiGate identifier filter (prefer exact device name, then general substrings)
+filter  f_fortigate  {
+    message("devname=\"FortiGate-40F-PURPLE9\"") or
+    message("devname=\"FortiGate") or
+    message("logid=\"") or
+    message("type=\"traffic\"") or
+    message("subtype=\"forwarded\"");
+};
+
+# Exact device-name filter for priority routing
+filter f_fgt_device_exact {
+    message("devname=\"FortiGate-40F-PURPLE9\"");
+};
+
 destination d_stdout {
     file("/dev/stdout" template("LOG ▶ $MESSAGE\n"));
 };
@@ -55,7 +69,7 @@ destination d_sentinelone_zscaler {
 
 destination d_sentinelone_linux {
     http(
-        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=linuxSyslog&dataSource.category=security&dataSource.vendor=Linux&dataSource.name=System%20Logs&metadata.version=1.0.0&severity_id=6")
+        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=systemLog&dataSource.category=security&dataSource.vendor=Linux&dataSource.name=System%20Logs&metadata.version=1.0.0&severity_id=6")
         headers(
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
@@ -80,9 +94,8 @@ destination d_sentinelone_fortigate {
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
         )
-        body("<${PRI}>${MSGHDR}${MSG}")
+        body("${MESSAGE}\n")
         method("POST")
-        content-compression("gzip")
         batch-lines(1)
         batch-bytes(1M)
         batch-timeout(100)
@@ -113,6 +126,16 @@ destination d_sentinelone_fallback {
     );
 };
 
+## Highest-priority path: exact FortiGate device name
+log {
+    source(s_network);
+    filter(f_fgt_device_exact);
+    rewrite(r_strip_pri);
+    destination(d_stdout);
+    destination(d_sentinelone_fortigate);
+    flags(final);
+};
+
 log {
     source(s_network);
     filter(f_zscaler);
@@ -122,6 +145,17 @@ log {
     flags(final);
 };
 
+# IMPORTANT: Handle FortiGate BEFORE parsing and stop further processing.
+log {
+    source(s_network);
+    filter(f_fortigate);
+    rewrite(r_strip_pri);
+    destination(d_stdout);
+    destination(d_sentinelone_fortigate);
+    flags(final);
+};
+
+# All remaining messages can be parsed safely for PROGRAM, HOST, etc. This includes Linux.
 log {
     source(s_network);
     parser(p_syslog);
@@ -133,13 +167,6 @@ log {
         match("CRON|systemd|kernel" value("PROGRAM"))
     ) {
         destination(d_sentinelone_linux);
-    }
-    elif (
-        match("devname=\"FortiGate" value("MESSAGE")) or
-        match("type=\"traffic\"|subtype=\"forwarded\"" value("MESSAGE")) or
-        match("logid=\"[0-9]+" value("MESSAGE"))
-    ) {
-        destination(d_sentinelone_fortigate);
     }
     else {
         destination(d_sentinelone_fallback);
