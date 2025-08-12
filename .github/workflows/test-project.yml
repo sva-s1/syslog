@@ -46,9 +46,8 @@ jobs:
           PORT1_NUMBER: ${{ vars.PORT1_NUMBER || '5514' }}
         run: |
           set -euo pipefail
-          CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
-          # Example command to update RFC 3339 timestamp in the Linux sample
-          sed "s/[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}T[0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}\.[0-9]\{3\}Z/$(date --utc +%Y-%m-%dT%H:%M:%S.%3NZ)/" \
+          # Use the portable command that works on all systems
+          sed -E "s/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?Z/$(date -u +'%Y-%m-%dT%H:%M:%SZ')/" \
             samples/linux-sample.log |
             tee /dev/stderr |
             docker run -i --rm --network host \
