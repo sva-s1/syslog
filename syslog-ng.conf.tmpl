@@ -44,16 +44,16 @@ filter f_fgt_device_exact {
 };
 
 destination d_stdout {
-    file("/dev/stdout" template("LOG ▶ $MESSAGE\n"));
+    file("/dev/stdout" template("LOG ▶ $MESSAGE\n") persist-name("d_stdout_persist")); # <--- FIX
 };
 
 # ===== START: ADDED FOR DEBUGGING =====
 destination d_stdout_linux_matched {
-    file("/dev/stdout" template("LINUX MATCH ▶ $MESSAGE\n"));
+    file("/dev/stdout" template("LINUX MATCH ▶ $MESSAGE\n") persist-name("d_stdout_linux_matched_persist")); # <--- FIX
 };
 
 destination d_stdout_fallback_matched {
-    file("/dev/stdout" template("FALLBACK MATCH ▶ $MESSAGE\n"));
+    file("/dev/stdout" template("FALLBACK MATCH ▶ $MESSAGE\n") persist-name("d_stdout_fallback_matched_persist")); # <--- FIX
 };
 # ===== END: ADDED FOR DEBUGGING =====
 
