@@ -130,7 +130,6 @@ destination d_sentinelone_fallback {
 log {
     source(s_network);
     filter(f_fgt_device_exact);
-    rewrite(r_strip_pri);
     destination(d_stdout);
     destination(d_sentinelone_fortigate);
     flags(final);
