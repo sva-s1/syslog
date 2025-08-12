@@ -74,7 +74,7 @@ destination d_sentinelone_linux {
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
         )
-        body("<${PRI}>${ISODATE} ${HOST} ${MSGHDR}${MSG}")
+        body("${RAWMSG}\n")
         method("POST")
         content-compression("gzip")
         batch-lines(1000)
