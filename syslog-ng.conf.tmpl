@@ -47,6 +47,16 @@ destination d_stdout {
     file("/dev/stdout" template("LOG ▶ $MESSAGE\n"));
 };
 
+# ===== START: ADDED FOR DEBUGGING =====
+destination d_stdout_linux_matched {
+    file("/dev/stdout" template("LINUX MATCH ▶ $MESSAGE\n"));
+};
+
+destination d_stdout_fallback_matched {
+    file("/dev/stdout" template("FALLBACK MATCH ▶ $MESSAGE\n"));
+};
+# ===== END: ADDED FOR DEBUGGING =====
+
 destination d_sentinelone_zscaler {
     http(
         url("https://${S1_HEC_URL}/services/collector/event?sourcetype=marketplace-zscalerinternetaccess-latest&dataSource.category=security&dataSource.name=Zscaler%20Internet%20Access&dataSource.vendor=Zscaler&metadata.version=1.0.0&metadata.product.vendor_name=Zscaler&metadata.product.name=ZIA&category_uid=4&category_name=Network%20Activity")
@@ -96,6 +106,7 @@ destination d_sentinelone_fortigate {
         )
         body("${MESSAGE}\n")
         method("POST")
+        content-compression("gzip")
         batch-lines(1)
         batch-bytes(1M)
         batch-timeout(100)
@@ -157,17 +168,18 @@ log {
 log {
     source(s_network);
     parser(p_syslog);
-    destination(d_stdout);
+    # destination(d_stdout); # Temporarily disable for cleaner output
 
     if (
         match("sshd|systemd|kernel|cron|authpriv" value("PROGRAM")) or
         match("pam_|sudo:|su:|sshd" value("MESSAGE")) or
         match("CRON|systemd|kernel" value("PROGRAM"))
     ) {
+        destination(d_stdout_linux_matched); # ADDED FOR DEBUGGING
         destination(d_sentinelone_linux);
     }
     else {
+        destination(d_stdout_fallback_matched); # ADDED FOR DEBUGGING
         destination(d_sentinelone_fallback);
     };
 };
-

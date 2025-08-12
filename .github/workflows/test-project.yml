@@ -72,6 +72,7 @@ jobs:
               -e "s/time=[0-9:]\{8\}/time=${CURRENT_TIME}/" \
               -e "s/eventtime=[0-9]\{19\}/eventtime=${EVENTTIME}/" \
               samples/fortigate-sample.log |
+            tee /dev/stderr |
             docker run -i --rm --network host \
               ghcr.io/sva-s1/alpine-nc:latest \
               /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER}"
@@ -84,9 +85,14 @@ jobs:
           CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
           sed "s/\"datetime\":\"[^\"]*\"/\"datetime\":\"$CURRENT_DATETIME\"/" \
             samples/zscaler-sample.log |
+            tee /dev/stderr |
             docker run -i --rm --network host \
               ghcr.io/sva-s1/alpine-nc:latest \
               /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER}"
+
+      - name: Display syslog-ng logs
+        if: always()
+        run: docker compose logs
 
       - name: Cleanup
         if: always()
