@@ -79,7 +79,7 @@ destination d_sentinelone_zscaler {
 
 destination d_sentinelone_linux {
     http(
-        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=systemLog&dataSource.category=security&dataSource.vendor=Linux&dataSource.name=System%20Logs&metadata.version=1.0.0&severity_id=6")
+        url("https://${S1_HEC_URL}/services/collector/raw?sourcetype=linuxSyslog&dataSource.category=security&dataSource.vendor=Linux&dataSource.name=System%20Logs&metadata.version=1.0.0&severity_id=6")
         headers(
             "Authorization: Bearer ${S1_HEC_WRITE_TOKEN}",
             "Content-Type: text/plain"
