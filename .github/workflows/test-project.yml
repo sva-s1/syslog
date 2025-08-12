@@ -50,6 +50,7 @@ jobs:
           # Example command to update RFC 3339 timestamp in the Linux sample
           sed "s/[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}T[0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}\.[0-9]\{3\}Z/$(date --utc +%Y-%m-%dT%H:%M:%S.%3NZ)/" \
             samples/linux-sample.log |
+            tee /dev/stderr |
             docker run -i --rm --network host \
               ghcr.io/sva-s1/alpine-nc:latest \
               /bin/ash -c "nc -u -w 2 127.0.0.1 ${PORT1_NUMBER}"
