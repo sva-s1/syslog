@@ -44,18 +44,8 @@ filter f_fgt_device_exact {
 };
 
 destination d_stdout {
-    file("/dev/stdout" template("LOG ▶ $MESSAGE\n") persist-name("d_stdout_persist")); # <--- FIX
+    file("/dev/stdout" template("LOG ▶ $MESSAGE\n"));
 };
-
-# ===== START: ADDED FOR DEBUGGING =====
-destination d_stdout_linux_matched {
-    file("/dev/stdout" template("LINUX MATCH ▶ $MESSAGE\n") persist-name("d_stdout_linux_matched_persist")); # <--- FIX
-};
-
-destination d_stdout_fallback_matched {
-    file("/dev/stdout" template("FALLBACK MATCH ▶ $MESSAGE\n") persist-name("d_stdout_fallback_matched_persist")); # <--- FIX
-};
-# ===== END: ADDED FOR DEBUGGING =====
 
 destination d_sentinelone_zscaler {
     http(
@@ -168,18 +158,16 @@ log {
 log {
     source(s_network);
     parser(p_syslog);
-    # destination(d_stdout); # Temporarily disable for cleaner output
+    destination(d_stdout);
 
     if (
         match("sshd|systemd|kernel|cron|authpriv" value("PROGRAM")) or
         match("pam_|sudo:|su:|sshd" value("MESSAGE")) or
         match("CRON|systemd|kernel" value("PROGRAM"))
     ) {
-        destination(d_stdout_linux_matched); # ADDED FOR DEBUGGING
         destination(d_sentinelone_linux);
     }
     else {
-        destination(d_stdout_fallback_matched); # ADDED FOR DEBUGGING
         destination(d_sentinelone_fallback);
     };
 };
