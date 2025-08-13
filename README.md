@@ -70,7 +70,7 @@ A pre-production-ready, containerized service that receives traditional syslog m
 1. **Clone and configure:**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/sva-s1/syslog.git
    cd syslog
    cp .env.example .env
    # Edit .env with your SentinelOne token(s)
@@ -79,7 +79,7 @@ A pre-production-ready, containerized service that receives traditional syslog m
 2. **Build and start:**
 
    ```bash
-   docker-compose up --build -d
+   docker-compose up -d
    ```
 
 3. **Test syslog reception:**
@@ -110,7 +110,7 @@ A pre-production-ready, containerized service that receives traditional syslog m
 
 ## Configuration
 
-All configuration is managed through the `.env` file. At container startup, the `entrypoint.sh` script substitutes variables from this file into the `syslog-ng.conf.tmpl` to generate the final `syslog-ng.conf`.
+All configuration is managed through the `.env` and `syslog-ng.conf.tmpl` files. At container startup, the `entrypoint.sh` script substitutes variables from this file into the `syslog-ng.conf.tmpl` to generate the final `syslog-ng.conf`.
 
 **Note:** Only variables explicitly handled by the `entrypoint.sh` script (e.g., `$S1_HEC_URL`, `$S1_HEC_WRITE_TOKEN`) are substituted. This prevents accidental modification of internal syslog-ng variables.
 
@@ -157,7 +157,7 @@ GROUP_ID=1000
 
 **Local Testing:**
 
-- Send test messages to UDP port 514
+- Send test messages to UDP port 5514
 - Verify reception in container logs
 
 **Remote Verification:**
