@@ -79,7 +79,7 @@ A pre-production-ready, containerized service that receives traditional syslog m
 2. **Build and start:**
 
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 3. **Test syslog reception:**
