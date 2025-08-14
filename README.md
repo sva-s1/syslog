@@ -1,5 +1,5 @@
 <img src="assets/logo-syslog.png"
-     alt="syslog-ng" height="95">
+     alt="syslog-ng" height="125">
 
 # Syslog [ROOTLESS](https://docs.docker.com/engine/security/rootless/) to SentinelOne SDL HEC Bridge
 
