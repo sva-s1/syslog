@@ -1,13 +1,34 @@
+<img src="assets/logo-syslog.png"
+     alt="syslog-ng" height="95">
+
 # Syslog [ROOTLESS](https://docs.docker.com/engine/security/rootless/) to SentinelOne SDL HEC Bridge
 
-**[Version](VERSION):** 1.1.5  
-**Status:** TESTING
-**Last Updated:** 2025-08-06  
-**Docker Image:** `ghcr.io/sva-s1/syslog:1.1.0`
+[![SentinelOne](https://img.shields.io/badge/SentinelOne-663399?style=for-the-badge&logo=sentinelone&logoColor=white)](https://www.sentinelone.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![syslog-ng](https://img.shields.io/badge/SYSLOG_NG-4.9.0-51aad6?style=for-the-badge)](https://www.syslog-ng.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![Syslog](https://img.shields.io/badge/Syslog-RFC3164%20%26%20RFC5424-orange?style=for-the-badge)](https://tools.ietf.org/html/rfc5424)
+
+**Version:** [1.1.6](VERSION) 
+**Status:** TESTING 
+**Last Updated:** 2025-08-14 
+**Docker Image:** [ghcr.io/sva-s1/syslog](https://github.com/sva-s1/syslog/pkgs/container/syslog) 
 
 ## Overview
 
 A pre-production-ready, containerized service that receives traditional syslog messages from various appliances/virtual-appliances/apps syslog sources and forwards them to the SentinelOne Singularity Data Lake (SDL) using the HTTP Event Collector (HEC) API. The service is designed for security operations, providing rich metadata and context for security analytics.
+
+> [!IMPORTANT]
+> This collector uses SentinelOne's [HEC API](https://community.sentinelone.com/s/article/000008671) to ingest syslog data directly into your SIEM for real-time threat detection and analysis.
+
+## 🎯 Use Cases & When to Use This Project
+
+**Need to differentiate multiple syslog sources on the same incoming port?** That's this project! 🎉
+
+This is a fork of the [upstream syslog-ng container image](https://hub.docker.com/layers/balabit/syslog-ng/4.9.0/images/sha256-bcb714a35a38aec5461cf80481119dde10b7e22550d60b2ccc2e4ebb22982d6b) designed to be easier, faster to deploy, scalable, and rootless ready.
+
+> [!TIP]
+> ⭐ **STAR this repo** if you find it useful!
 
 ## Key Features
 
@@ -44,10 +65,10 @@ A pre-production-ready, containerized service that receives traditional syslog m
 │  Sources        │    │  (UDP/5514)           │    │  HEC API              │
 │                 │    │                       │    │                       │
 └─────────────────┘    └───────────────────────┘    └───────────────────────┘
-      ▲                                                       ▲
-      │                                                       │
-      └───────────────────────────────────────────────────────┘
-                      Configuration via .env
+        ▲                                                       ▲
+        │                                                       │
+        └───────────────────────────────────────────────────────┘
+              Configuration via .env & syslog-ng.conf.tmpl
 ```
 
 ### Example Log Sources
@@ -58,14 +79,16 @@ A pre-production-ready, containerized service that receives traditional syslog m
 | **FortiGate Firewall**      | `marketplace-fortinetfortigate-latest`     | `devname="FortiGate"`, `type="traffic"`, `logid="0000000013"` |
 | **ZScaler Internet Access** | `marketplace-zscalerinternetaccess-latest` | `product="NSS"`, `vendor="Zscaler"`, `action="Allow"`         |
 
-## Quick Start
+## 📋 Prerequisites
 
-### Prerequisites
+> [!WARNING]
+> Do not install Docker from your distribution repository as they can be outdated.
 
-- Docker and Docker Compose
-- SentinelOne HEC write token(s)
+- **Docker Engine** - [Install Docker Engine](https://docs.docker.com/engine/install/)
+- **Docker Compose** - [Install Docker Compose](https://docs.docker.com/compose/)
+- **SentinelOne SIEM** with API access
 
-### Setup
+## 🚀 Quick Setup
 
 1. **Clone and configure:**
 
@@ -157,7 +180,7 @@ GROUP_ID=1000
 
 **Local Testing:**
 
-- Send test messages to UDP port 5514
+- Send test messages to UDP port `5514`
 - Verify reception in container logs
 
 **Remote Verification:**
@@ -200,7 +223,4 @@ For issues and questions, please refer to the project documentation or create an
 
 ---
 
-_Built with ❤️ for secure, scalable log forwarding_
-
-
-
+_Built with ❤️ for secure, scalable 🪵 forwarding_
