@@ -9,10 +9,7 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 [![Syslog](https://img.shields.io/badge/Syslog-RFC3164%20%26%20RFC5424-orange?style=for-the-badge)](https://tools.ietf.org/html/rfc5424)
 
-**Version:** [1.1.6](VERSION) 
-**Status:** TESTING 
-**Last Updated:** 2025-08-14 
-**Docker Image:** [ghcr.io/sva-s1/syslog](https://github.com/sva-s1/syslog/pkgs/container/syslog) 
+**Version:** [1.1.6](VERSION) | **Status:** TESTING | **Last Updated:** 2025-08-14 | **Docker Image:** [ghcr.io/sva-s1/syslog](https://github.com/sva-s1/syslog/pkgs/container/syslog) 
 
 ## Overview
 
