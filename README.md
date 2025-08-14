@@ -83,7 +83,7 @@ This is a fork of the [upstream syslog-ng container image](https://hub.docker.co
 
 - **Docker Engine** - [Install Docker Engine](https://docs.docker.com/engine/install/)
 - **Docker Compose** - [Install Docker Compose](https://docs.docker.com/compose/)
-- **SentinelOne SIEM** with API access
+- **SentinelOne AI-SIEM** with [API access](https://community.sentinelone.com/s/article/000006771)
 
 ## 🚀 Quick Setup
 
