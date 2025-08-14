@@ -6,8 +6,8 @@
 [![SentinelOne](https://img.shields.io/badge/SentinelOne-663399?style=for-the-badge&logo=sentinelone&logoColor=white)](https://www.sentinelone.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![syslog-ng](https://img.shields.io/badge/SYSLOG_NG-4.9.0-51aad6?style=for-the-badge)](https://www.syslog-ng.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![Syslog](https://img.shields.io/badge/Syslog-RFC3164%20%26%20RFC5424-orange?style=for-the-badge)](https://tools.ietf.org/html/rfc5424)
+[![License](https://img.shields.io/badge/License-MIT-932218.svg?style=for-the-badge)](LICENSE)
+[![Syslog](https://img.shields.io/badge/Syslog-RFC3164%20%26%20RFC5424-f6c444?style=for-the-badge)](https://tools.ietf.org/html/rfc5424)
 
 **Version:** [1.1.6](VERSION) | **Status:** TESTING | **Last Updated:** 2025-08-14 | **Docker Image:** [ghcr.io/sva-s1/syslog](https://github.com/sva-s1/syslog/pkgs/container/syslog) 
 
