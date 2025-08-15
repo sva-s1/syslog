@@ -13,6 +13,7 @@ LOCAL-ONLY/               # scripts only useful on your workstation
 
 # ── secrets / env files ─────────────────────────────────────────
 .env
+CLAUDE.md
 
 # ── runtime volumes ─────────────────────────────────────────────
 data/
