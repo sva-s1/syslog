@@ -1,9 +1,9 @@
 services:
   syslog:
-    #image: ghcr.io/sva-s1/syslog:latest
-    build:
-      context: .
-      dockerfile: Dockerfiles/syslog-ng-rootless/Dockerfile
+    image: ghcr.io/sva-s1/syslog:latest
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfiles/syslog-ng-rootless/Dockerfile
     container_name: syslog
     user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     ports:
