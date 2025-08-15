@@ -236,7 +236,7 @@ This project includes automated testing pipelines via GitHub Actions:
 
 ## Version History
 
-### v1.2 (2025-08-15) - Production Ready
+### v1.1.6 (2025-08-15) - Production Ready
 
 - ✅ **Dual deployment modes**: Production (registry image) and Development (local build)
 - ✅ **Automated rootless testing**: GitHub Actions pipeline validates rootless Docker compatibility
