@@ -110,7 +110,7 @@ jobs:
           chmod 777 test-logs  # Allow container user to write
           
           # Get the container's user ID
-          CONTAINER_UID=$(docker run --rm test-syslog-rootless id -u)
+          CONTAINER_UID=$(docker run --rm test-syslog-rootless sh -c "id -u")
           echo "Container runs as UID: $CONTAINER_UID"
           
           # Test that container creates files with correct ownership
