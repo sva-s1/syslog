@@ -105,6 +105,14 @@ jobs:
 
       - name: Test file permissions and ownership
         run: |
+          # Create directory with proper permissions for container user
+          mkdir -p test-logs
+          chmod 777 test-logs  # Allow container user to write
+          
+          # Get the container's user ID
+          CONTAINER_UID=$(docker run --rm test-syslog-rootless id -u)
+          echo "Container runs as UID: $CONTAINER_UID"
+          
           # Test that container creates files with correct ownership
           docker run --rm \
             -v "$PWD/test-logs:/tmp/logs" \
@@ -113,12 +121,19 @@ jobs:
           
           # Check that the created file is owned by the runner user (not root)
           if [ -f "test-logs/test-file" ]; then
-            FILE_OWNER=$(stat -c %U test-logs/test-file)
-            if [ "$FILE_OWNER" = "root" ]; then
-              echo "ERROR: File created by container is owned by root"
+            FILE_OWNER_UID=$(stat -c %u test-logs/test-file)
+            FILE_OWNER_NAME=$(stat -c %U test-logs/test-file 2>/dev/null || echo "unknown")
+            
+            echo "File owner UID: $FILE_OWNER_UID"
+            echo "File owner name: $FILE_OWNER_NAME"
+            
+            if [ "$FILE_OWNER_UID" -eq 0 ]; then
+              echo "ERROR: File created by container is owned by root (UID 0)"
               exit 1
+            elif [ "$FILE_OWNER_UID" -eq "$CONTAINER_UID" ]; then
+              echo "SUCCESS: File created by container has correct ownership (UID $FILE_OWNER_UID)"
             else
-              echo "SUCCESS: File created by container is owned by $FILE_OWNER (not root)"
+              echo "SUCCESS: File created by container is owned by non-root user (UID $FILE_OWNER_UID)"
             fi
             rm -rf test-logs/
           else
