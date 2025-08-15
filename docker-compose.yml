@@ -1,9 +1,7 @@
 services:
   syslog:
+    # Production mode: pulls secure, tested image from registry
     image: ghcr.io/sva-s1/syslog:latest
-    #build:
-    #  context: .
-    #  dockerfile: Dockerfiles/syslog-ng-rootless/Dockerfile
     container_name: syslog
     user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     ports:
@@ -13,8 +11,6 @@ services:
     volumes:
       - syslog_data:/var/lib/syslog-ng
       - syslog_logs:/var/log/syslog-ng
-      # Mount local syslog-ng template to ensure latest config is used for testing
-      #- ./syslog-ng.conf.tmpl:/etc/syslog-ng/syslog-ng.conf.tmpl:ro
 
     environment:
       # Pass through all environment variables from .env

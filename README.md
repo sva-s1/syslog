@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/License-MIT-932218.svg?style=for-the-badge)](LICENSE)
 [![Syslog](https://img.shields.io/badge/Syslog-RFC3164%20%26%20RFC5424-f6c444?style=for-the-badge)](https://tools.ietf.org/html/rfc5424)
 
-**Version:** [1.1.6](VERSION) | **Status:** TESTING | **Last Updated:** 2025-08-14 | **Docker Image:** [ghcr.io/sva-s1/syslog](https://github.com/sva-s1/syslog/pkgs/container/syslog) 
+**Version:** [1.1.6](VERSION) | **Status:** TESTING | **Last Updated:** 2025-08-15 | **Docker Image:** [ghcr.io/sva-s1/syslog](https://github.com/sva-s1/syslog/pkgs/container/syslog) 
 
 ## Overview
 
@@ -87,6 +87,10 @@ This is a fork of the [upstream syslog-ng container image](https://hub.docker.co
 
 ## 🚀 Quick Setup
 
+### Production Deployment (Recommended)
+
+For production use with the default, tested syslog configuration:
+
 1. **Clone and configure:**
 
    ```bash
@@ -96,10 +100,28 @@ This is a fork of the [upstream syslog-ng container image](https://hub.docker.co
    # Edit .env with your SentinelOne token(s)
    ```
 
-2. **Build and start:**
+2. **Start with pre-built image:**
 
    ```bash
    docker compose up -d
+   ```
+
+### Development/Customization Mode
+
+For customizing syslog-ng configuration or adding new log sources:
+
+1. **Edit the configuration template:**
+
+   ```bash
+   # Modify syslog-ng.conf.tmpl for your specific log sources
+   vim syslog-ng.conf.tmpl
+   ```
+
+2. **Build and start with development override:**
+
+   ```bash
+   # Uses local build + live config mounting
+   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
    ```
 
 3. **Test syslog reception:**
@@ -125,7 +147,7 @@ This is a fork of the [upstream syslog-ng container image](https://hub.docker.co
 
 4. **View logs:**
    ```bash
-   docker-compose logs -f syslog-bridge
+   docker compose logs -f syslog
    ```
 
 ## Configuration
@@ -156,24 +178,51 @@ GROUP_ID=1000
 
 ```
 .
-├── Dockerfile              # Container build configuration
-├── docker-compose.yml      # Service orchestration
-├── entrypoint.sh           # Container entrypoint script
-├── syslog-ng.conf.tmpl     # syslog-ng configuration template
-├── .env                    # Environment variables (not in repo)
-├── .env.example            # Environment template
-├── CHANGELOG.md            # Changes explained
-├── README.md               # This file
-├── PLAN.md                 # Development roadmap
-├── VERSION                 # Project Version
-├── samples/                # Directory with sample log files for testing
+├── .github/
+│   └── workflows/          # GitHub Actions CI/CD pipelines
+│       ├── build-alpine-nc.yml
+│       ├── build-syslog.yml
+│       ├── test-project.yml
+│       └── test-rootless.yml
+├── Dockerfiles/
+│   ├── alpine-nc/
+│   │   └── Dockerfile      # Alpine netcat utility container
+│   └── syslog-ng-rootless/
+│       └── Dockerfile      # Main syslog-ng rootless container
+├── LOCAL-ONLY/
+│   └── llm_status.sh       # Local development scripts
+├── assets/
+│   └── logo-syslog.png     # Project logo
+├── samples/                # Sample log files for testing
 │   ├── fortigate-sample.log
 │   ├── linux-sample.log
 │   └── zscaler-sample.log
+├── CHANGELOG.md            # Project changes and version history
+├── CLAUDE.md               # Claude AI assistant instructions
+├── LICENSE                 # MIT license
+├── PLAN.md                 # Development roadmap
+├── README.md               # This file
+├── ROOTLESS_FIXES.md       # Rootless Docker troubleshooting
+├── VERSION                 # Current project version
+├── docker-compose.yml      # Production service orchestration
+├── docker-compose.dev.yml  # Development override (build + mount config)
+├── entrypoint.sh           # Container entrypoint script
+├── syslog-ng.conf.tmpl     # syslog-ng configuration template
+├── syslog-ng-test.conf     # Test configuration
+├── .env                    # Environment variables (not in repo)
+├── .env.example            # Environment template
 └── .gitignore              # Git exclusions
 ```
 
 ### Testing
+
+**Automated Testing:**
+
+This project includes automated testing pipelines via GitHub Actions:
+
+- **Rootless Compatibility Testing** - Validates that containers run properly in rootless mode without requiring privileged access
+- **Functional Testing** - Tests log processing with sample data from FortiGate, ZScaler, and Linux systems
+- **Build Testing** - Automatically builds and publishes container images
 
 **Local Testing:**
 
@@ -186,6 +235,14 @@ GROUP_ID=1000
 - Verify correct parser assignment via `sourcetype`
 
 ## Version History
+
+### v1.2 (2025-08-15) - Production Ready
+
+- ✅ **Dual deployment modes**: Production (registry image) and Development (local build)
+- ✅ **Automated rootless testing**: GitHub Actions pipeline validates rootless Docker compatibility
+- ✅ **Enhanced CI/CD**: Automated testing for functionality, builds, and security
+- ✅ **Improved documentation**: Clear separation of production vs development workflows
+- ✅ **Security validation**: Tests ensure containers run without privileged access
 
 ### v1.0 (2025-08-04) - QA Ready
 
