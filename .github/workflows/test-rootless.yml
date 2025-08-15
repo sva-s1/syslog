@@ -22,6 +22,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup rootless Docker with AppArmor fix
+        run: |
+          # Fix AppArmor restrictions for rootless Docker
+          sudo tee "/etc/apparmor.d/home.runner.bin.rootlesskit" <<EOT
+          # ref: https://ubuntu.com/blog/ubuntu-23-10-restricted-unprivileged-user-namespaces
+          abi <abi/4.0>,
+          include <tunables/global>
+          
+          /home/runner/bin/rootlesskit flags=(unconfined) {
+            userns,
+          
+            # Site-specific additions and overrides. See local/README for details.
+            include if exists <local/home.runner.bin.rootlesskit>
+          }
+          EOT
+          sudo systemctl restart apparmor.service
+          
       - name: Setup rootless Docker
         uses: ScribeMD/rootless-docker@0.2.2
 
