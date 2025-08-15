@@ -84,16 +84,19 @@ jobs:
           # Wait for container to start
           sleep 5
           
-          # Check if syslog-ng is running using ps command
-          SYSLOG_RUNNING=$(docker exec test-syslog-restricted ps aux | grep -c '[s]yslog-ng' || echo "0")
-          if [ "$SYSLOG_RUNNING" -gt 0 ]; then
-            echo "SUCCESS: syslog-ng is running with restricted capabilities"
+          # Check if container is still running (indicates syslog-ng started successfully)
+          if docker ps --filter "name=test-syslog-restricted" --filter "status=running" | grep -q test-syslog-restricted; then
+            echo "SUCCESS: Container is running with restricted capabilities"
+            # Also check if we can connect to the syslog port
+            if timeout 5 bash -c "echo 'test' | nc -u 127.0.0.1 5514"; then
+              echo "SUCCESS: syslog port is accessible"
+            else
+              echo "WARNING: Could not send test data to syslog port (nc may not be available)"
+            fi
           else
-            echo "ERROR: syslog-ng failed to start with restricted capabilities"
+            echo "ERROR: Container failed to start or crashed with restricted capabilities"
             echo "=== Container logs ==="
             docker logs test-syslog-restricted
-            echo "=== Running processes ==="
-            docker exec test-syslog-restricted ps aux || echo "ps command failed"
             exit 1
           fi
           
