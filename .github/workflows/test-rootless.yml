@@ -84,13 +84,16 @@ jobs:
           # Wait for container to start
           sleep 5
           
-          # Check if syslog-ng is running
-          docker exec test-syslog-restricted pgrep syslog-ng > /dev/null
-          if [ $? -eq 0 ]; then
+          # Check if syslog-ng is running using ps command
+          SYSLOG_RUNNING=$(docker exec test-syslog-restricted ps aux | grep -c '[s]yslog-ng' || echo "0")
+          if [ "$SYSLOG_RUNNING" -gt 0 ]; then
             echo "SUCCESS: syslog-ng is running with restricted capabilities"
           else
             echo "ERROR: syslog-ng failed to start with restricted capabilities"
+            echo "=== Container logs ==="
             docker logs test-syslog-restricted
+            echo "=== Running processes ==="
+            docker exec test-syslog-restricted ps aux || echo "ps command failed"
             exit 1
           fi
           
