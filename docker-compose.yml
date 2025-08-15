@@ -1,6 +1,6 @@
 services:
   syslog:
-    # Production mode: pulls secure, tested image from registry
+    # Development/Testing mode: pulls pre-built image for quick testing
     image: ghcr.io/sva-s1/syslog:latest
     container_name: syslog
     user: "${USER_ID:-1000}:${GROUP_ID:-1000}"

@@ -87,9 +87,9 @@ This is a fork of the [upstream syslog-ng container image](https://hub.docker.co
 
 ## 🚀 Quick Setup
 
-### Production Deployment (Recommended)
+### Development/Testing Deployment (Quick Start)
 
-For production use with the default, tested syslog configuration:
+For development and testing with the default, pre-built syslog configuration:
 
 1. **Clone and configure:**
 
@@ -106,9 +106,9 @@ For production use with the default, tested syslog configuration:
    docker compose up -d
    ```
 
-### Development/Customization Mode
+### Production Deployment (Recommended)
 
-For customizing syslog-ng configuration or adding new log sources:
+For production use with customized syslog-ng configuration:
 
 1. **Edit the configuration template:**
 
@@ -117,10 +117,10 @@ For customizing syslog-ng configuration or adding new log sources:
    vim syslog-ng.conf.tmpl
    ```
 
-2. **Build and start with development override:**
+2. **Build and start with production override:**
 
    ```bash
-   # Uses local build + live config mounting
+   # Uses local build + custom config mounting
    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
    ```
 
@@ -204,8 +204,8 @@ GROUP_ID=1000
 ├── README.md               # This file
 ├── ROOTLESS_FIXES.md       # Rootless Docker troubleshooting
 ├── VERSION                 # Current project version
-├── docker-compose.yml      # Production service orchestration
-├── docker-compose.dev.yml  # Development override (build + mount config)
+├── docker-compose.yml      # Development/testing service orchestration
+├── docker-compose.dev.yml  # Production override (build + mount config)
 ├── entrypoint.sh           # Container entrypoint script
 ├── syslog-ng.conf.tmpl     # syslog-ng configuration template
 ├── syslog-ng-test.conf     # Test configuration
@@ -268,8 +268,8 @@ This project includes automated testing pipelines via GitHub Actions:
 ## Roadmap
 
 - **TLS Encryption:** Support for TLS-encrypted syslog forwarding using self-hosted or bring-your-own certificates (CA).
+- **UUID Event Tracking:** Inject unique UUID with each test event for easier tracking and correlation in SentinelOne SDL.
 - **Additional Log Sources:** Integration with other common security appliances and applications.
-- **Externalized Configuration:** Support for mounting configuration files from the host, enabling dynamic reloads without rebuilding the container.
 
 ## Support
 

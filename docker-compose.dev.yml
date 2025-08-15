@@ -1,8 +1,8 @@
-# Development override for custom syslog-ng configuration
+# Production override for custom syslog-ng configuration
 # Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 services:
   syslog:
-    # Development mode: builds from local source with custom config
+    # Production mode: builds from local source with custom config
     build:
       context: .
       dockerfile: Dockerfiles/syslog-ng-rootless/Dockerfile
